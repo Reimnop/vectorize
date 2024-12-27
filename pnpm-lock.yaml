@@ -4,11 +4,6 @@ settings:
   autoInstallPeers: true
   excludeLinksFromLockfile: false
 
-dependencies:
-  three:
-    specifier: ^0.171.0
-    version: 0.171.0
-
 devDependencies:
   '@eslint/compat':
     specifier: ^1.2.3
@@ -58,6 +53,9 @@ devDependencies:
   tailwindcss:
     specifier: ^3.4.9
     version: 3.4.17
+  three:
+    specifier: ^0.171.0
+    version: 0.171.0
   typescript:
     specifier: ^5.0.0
     version: 5.7.2
@@ -3089,7 +3087,7 @@ packages:
 
   /three@0.171.0:
     resolution: {integrity: sha512-Y/lAXPaKZPcEdkKjh0JOAHVv8OOnv/NDJqm0wjfCzyQmfKxV7zvkwsnBgPBKTzJHToSOhRGQAGbPJObT59B/PQ==}
-    dev: false
+    dev: true
 
   /tiny-glob@0.2.9:
     resolution: {integrity: sha512-g/55ssRPUjShh+xkfx9UPDXqhckHEsHr4Vd9zX55oSdGZc/MD0m3sferOkwWtp98bv+kcVfEHtRJgBVJzelrzg==}
