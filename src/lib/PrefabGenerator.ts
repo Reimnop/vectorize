@@ -40,7 +40,7 @@ function createObject(
     d: depth,
     st: startTime,
     ed: {
-      bin
+      b: bin
     },
     e: [
       {
