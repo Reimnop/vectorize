@@ -1,6 +1,19 @@
 <script lang="ts">
-	import '../app.css';
+	import '../app.pcss';
+	import Footer from './Footer.svelte';
+	import Header from './Header.svelte';
+
 	let { children } = $props();
 </script>
 
-{@render children()}
+<div class="w-screen min-h-screen p-4 flex flex-col gap-4">
+	<header>
+		<Header />
+	</header>
+	<main>
+		{@render children()}
+	</main>
+	<footer class="mt-auto">
+		<Footer />
+	</footer>
+</div>

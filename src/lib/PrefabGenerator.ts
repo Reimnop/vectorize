@@ -1,8 +1,9 @@
 import type { Point2 } from "./data/Point2";
 
-function createPrefab(name: string, type: number, objects: object[]) {
+function createPrefab(name: string, description: string, type: number, objects: object[]) {
   return {
     n: name,
+    description,
     type,
     objs: objects
   };
@@ -17,6 +18,7 @@ function createObject(
   origin: Point2,
   type: number,
   depth: number,
+  bin: number,
   position: Point2,
   scale: Point2,
   rotation: number,
@@ -37,6 +39,9 @@ function createObject(
     p_t: "111", // parent type (all)
     d: depth,
     st: startTime,
+    ed: {
+      bin
+    },
     e: [
       {
         k: [

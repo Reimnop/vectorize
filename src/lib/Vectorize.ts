@@ -6,18 +6,18 @@ import type { RightTriangle } from './data/RightTriangle';
 import { Vector2 } from './data/Vector2';
 import type { Point2 } from './data/Point2';
 
-async function loadSvgAsync(url: string): Promise<SVGResult> {
+function parseSvg(text: string): SVGResult {
   const loader = new SVGLoader();
-  return await loader.loadAsync(url);
+  return loader.parse(text);
 }
 
-function triangulateSvg(svg: SVGResult): Triangle[] {
+function triangulateSvg(svg: SVGResult, segments: number): Triangle[] {
   const triangles: Triangle[] = [];
   for (let i = 0; i < svg.paths.length; i++) {
     const svgPath = svg.paths[i];
     const svgShapes = SVGLoader.createShapes(svgPath);
     for (const svgShape of svgShapes) {
-      const points = svgShape.extractPoints(4);
+      const points = svgShape.extractPoints(segments);
       const vertices = points.shape;
       const holes = points.holes;
 
@@ -185,7 +185,7 @@ function angleBetweenVectors(a: Vector2, b: Vector2): number {
 }
 
 export default {
-  loadSvgAsync,
+  parseSvg,
   triangulateSvg,
   convertTriangleToRightTriangles,
   generateTheme
