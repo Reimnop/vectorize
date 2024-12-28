@@ -131,7 +131,7 @@
   <Panel class="lg:flex-[2_1_0]">
     <h2 class="text-center">Config</h2>
     <form onsubmit={onSubmit}>
-      <div class="flex flex-col gap-4 sm:flex-row sm:gap-2">
+      <div class="flex flex-col gap-2 sm:flex-row">
         <label class="w-full">
           Prefab name
           <input type="text" name="prefab-name" />
