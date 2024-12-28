@@ -1,38 +1,24 @@
-# sv
+# Vectorize
 
-Everything you need to build a Svelte project, powered by [`sv`](https://github.com/sveltejs/cli).
+> THE tool to convert SVG files to Project Arrhythmia prefabs
 
-## Creating a project
+## I wanna use it right now!
 
-If you're seeing this, you've probably already done this step. Congrats!
+[Here you go](https://vectorize.reimnop.com)
 
-```bash
-# create a new project in the current directory
-npx sv create
+## How?
 
-# create a new project in my-app
-npx sv create my-app
-```
+1. Fill out the "Config" form
+2. Upload your SVG file in the form
+3. Configure the color indices that you want to put in your theme
+4. Click "Generate"
+5. ???
+6. Profit
 
-## Developing
+## Legal mumbo jumbo
 
-Once you've created a project and installed dependencies with `npm install` (or `pnpm install` or `yarn`), start a development server:
+This project is licensed under the MIT License. You can find the license in the [LICENSE](LICENSE) file.
 
-```bash
-npm run dev
+## Contributing
 
-# or start the server and open the app in a new browser tab
-npm run dev -- --open
-```
-
-## Building
-
-To create a production version of your app:
-
-```bash
-npm run build
-```
-
-You can preview the production build with `npm run preview`.
-
-> To deploy your app, you may need to install an [adapter](https://svelte.dev/docs/kit/adapters) for your target environment.
+All contributions are welcome!
