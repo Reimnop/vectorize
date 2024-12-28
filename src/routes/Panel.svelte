@@ -12,7 +12,7 @@
   }: Props = $props();
 </script>
 
-<div class="border border-foreground rounded-lg p-4 bg-background {className}">
+<div class="border border-foreground-sub rounded-lg p-4 bg-background {className}">
   {#if children}
     {@render children()}
   {/if}
