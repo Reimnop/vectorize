@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { onDestroy, onMount } from "svelte";
+  import { browser } from '$app/environment';
 
   interface Props {
     min: number;
@@ -18,13 +19,17 @@
   }: Props = $props();
 
   onMount(() => {
-    window.addEventListener("mouseup", mouseUp);
-    window.addEventListener("mousemove", mouseMove);
+    if (browser) {
+      window.addEventListener("mouseup", mouseUp);
+      window.addEventListener("mousemove", mouseMove);
+    }
   });
 
   onDestroy(() => {
-    window.removeEventListener("mouseup", mouseUp);
-    window.removeEventListener("mousemove", mouseMove);
+    if (browser) {
+      window.removeEventListener("mouseup", mouseUp);
+      window.removeEventListener("mousemove", mouseMove);
+    }
   });
 
   let slider: HTMLDivElement | null = $state(null);
