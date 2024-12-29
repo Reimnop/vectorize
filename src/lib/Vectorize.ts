@@ -5,19 +5,19 @@ import type { Triangle } from './data/Triangle';
 import type { RightTriangle } from './data/RightTriangle';
 import { Vector2 } from './data/Vector2';
 import type { Point2 } from './data/Point2';
+import type { VectorPath } from './data/VectorPath';
 
 function parseSvg(text: string): SVGResult {
   const loader = new SVGLoader();
   return loader.parse(text);
 }
 
-function triangulateSvg(svg: SVGResult, segments: number): Triangle[] {
-  const triangles: Triangle[] = [];
-  for (let i = 0; i < svg.paths.length; i++) {
-    const svgPath = svg.paths[i];
-    const svgShapes = SVGLoader.createShapes(svgPath);
-    for (const svgShape of svgShapes) {
-      const points = svgShape.extractPoints(segments);
+function computeSvgPaths(svg: SVGResult, segments: number): VectorPath[] {
+  const paths: VectorPath[] = [];
+  for (const svgPath of svg.paths) {
+    const shapes = SVGLoader.createShapes(svgPath);
+    for (const shape of shapes) {
+      const points = shape.extractPoints(segments);
       const vertices = points.shape;
       const holes = points.holes;
 
@@ -33,40 +33,54 @@ function triangulateSvg(svg: SVGResult, segments: number): Triangle[] {
         }
       }
 
-      // triangulate shape
-      const faces = ShapeUtils.triangulateShape(vertices, holes);
-
-      // join vertices of inner and outer paths
-      const allVertices = vertices.concat(...holes);
-
-      // create triangles
-      for (const face of faces) {
-        const a = allVertices[face[0]];
-        const b = allVertices[face[1]];
-        const c = allVertices[face[2]];
-
-        // check if any vertex overlaps
-        if (Math.abs(a.x - b.x) < 0.0001 && Math.abs(a.y - b.y) < 0.0001) {
-          continue;
-        }
-
-        if (Math.abs(b.x - c.x) < 0.0001 && Math.abs(b.y - c.y) < 0.0001) {
-          continue;
-        }
-
-        if (Math.abs(c.x - a.x) < 0.0001 && Math.abs(c.y - a.y) < 0.0001) {
-          continue;
-        }
-
-        triangles.push({
-          a: { x: a.x, y: a.y },
-          b: { x: b.x, y: b.y },
-          c: { x: c.x, y: c.y },
-          z: i,
-          color: svgPath.color.getHexString()
-        });
-      }
+      paths.push({ 
+        vertices,
+        holes,
+        color: svgPath.color
+      });
     }
+  }
+  return paths;
+}
+
+function triangulatePath(path: VectorPath, z: number): Triangle[] {
+  const triangles: Triangle[] = [];
+
+  const vertices = path.vertices;
+  const holes = path.holes;
+
+  // triangulate shape
+  const faces = ShapeUtils.triangulateShape(vertices, holes);
+
+  // join vertices of inner and outer paths
+  const allVertices = vertices.concat(...holes);
+
+  // create triangles
+  for (const face of faces) {
+    const a = allVertices[face[0]];
+    const b = allVertices[face[1]];
+    const c = allVertices[face[2]];
+
+    // check if any vertex overlaps
+    if (Math.abs(a.x - b.x) < 0.0001 && Math.abs(a.y - b.y) < 0.0001) {
+      continue;
+    }
+
+    if (Math.abs(b.x - c.x) < 0.0001 && Math.abs(b.y - c.y) < 0.0001) {
+      continue;
+    }
+
+    if (Math.abs(c.x - a.x) < 0.0001 && Math.abs(c.y - a.y) < 0.0001) {
+      continue;
+    }
+
+    triangles.push({
+      a: { x: a.x, y: a.y },
+      b: { x: b.x, y: b.y },
+      c: { x: c.x, y: c.y },
+      z: z,
+      color: path.color.getHexString()
+    });
   }
   return triangles;
 }
@@ -186,7 +200,8 @@ function angleBetweenVectors(a: Vector2, b: Vector2): number {
 
 export default {
   parseSvg,
-  triangulateSvg,
+  computeSvgPaths,
+  triangulatePath,
   convertTriangleToRightTriangles,
   generateTheme
 }

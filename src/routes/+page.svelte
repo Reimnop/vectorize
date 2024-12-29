@@ -8,6 +8,7 @@
 	import type { SVGResult } from 'three/examples/jsm/Addons.js';
 	import TextDownload from './TextDownload.svelte';
 	import FileUpload from '$lib/components/FileUpload.svelte';
+	import type { Triangle } from '$lib/data/Triangle';
 
   interface Result {
     text: string;
@@ -78,7 +79,15 @@
     const prefabType = Number(form.get("prefab-type"));
     const prefabDescription = form.get("prefab-description") as string;
 
-    const triangles = Vectorize.triangulateSvg(svg, quality);
+    const paths = Vectorize.computeSvgPaths(svg, quality);
+
+    const triangles: Triangle[] = [];
+    for (let i = 0; i < paths.length; i++) {
+      const path = paths[i];
+      const trianglesForPath = Vectorize.triangulatePath(path, i);
+      triangles.push(...trianglesForPath);
+    }
+
     const rightTriangles = triangles.flatMap(triangle => Vectorize.convertTriangleToRightTriangles(triangle));
 
     const minBoxX = Math.min(...triangles.flatMap(x => [x.a.x, x.b.x, x.c.x]));
