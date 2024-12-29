@@ -38,6 +38,7 @@ a {
   @apply underline;
 }
 
+/* form */
 form {
   @apply flex flex-col gap-2 text-foreground-sub;
 }
@@ -46,6 +47,7 @@ label {
   @apply text-sm flex flex-col gap-1;
 }
 
+/* text input */
 input[type="text"], input[type="number"], textarea {
   @apply border border-foreground-sub rounded-md px-2 py-1 bg-background text-foreground duration-75 !outline-none;
 }
@@ -54,6 +56,7 @@ input[type="text"]:focus, input[type="number"]:focus, textarea:focus {
   @apply border-foreground;
 }
 
+/* select */
 select {
   @apply border border-foreground-sub rounded-md px-2 py-1 bg-background text-foreground duration-75 text-base;
 }
@@ -62,6 +65,7 @@ select:focus {
   @apply border-foreground;
 }
 
+/* button */
 button {
   @apply border border-foreground-sub duration-75 rounded-md px-2 py-1 text-foreground-sub hover:border-foreground hover:text-foreground;
 }
