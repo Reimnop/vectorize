@@ -13,7 +13,7 @@
   let { 
     min = 1,
     max = 16,
-    value = 1,
+    value = $bindable(1),
     name = "",
     class: className = ""
   }: Props = $props();

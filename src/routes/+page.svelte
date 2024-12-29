@@ -9,6 +9,8 @@
 	import TextDownload from './TextDownload.svelte';
 	import FileUpload from '$lib/components/FileUpload.svelte';
 	import type { Triangle } from '$lib/data/Triangle';
+	import type { VectorPath } from '$lib/data/VectorPath';
+	import ToggleSwitch from '$lib/components/ToggleSwitch.svelte';
 
   interface Result {
     text: string;
@@ -16,7 +18,19 @@
     objectCount: number;
   }
 
+  interface Preview {
+    paths: VectorPath[];
+    minBoxX: number;
+    minBoxY: number;
+    maxBoxX: number;
+    maxBoxY: number;
+  }
+
   let selectedFile: File | null = $state(null);
+  let previewEnabled: boolean = $state(false);
+
+  let quality: number = $state(3);
+
   let svgPromise: Promise<SVGResult> | null = $derived.by(() => {
     if (!selectedFile) {
       return null;
@@ -43,6 +57,28 @@
         reject("Failed to read file");
       });
     });
+  });
+  let previewPromise: Promise<Preview> | null = $derived.by(() => {
+    if (!previewEnabled) {
+      return null;
+    }
+    if (!svgPromise) {
+      return null;
+    }
+    const svgPromise1 = svgPromise;
+    const segments = quality;
+
+    async function generatePreview(): Promise<Preview> {
+      const svg = await svgPromise1;
+      const paths = Vectorize.computeSvgPaths(svg, segments);
+      const minBoxX = Math.min(...paths.flatMap(x => x.vertices.map(x => x.x)));
+      const minBoxY = Math.min(...paths.flatMap(x => x.vertices.map(x => x.y)));
+      const maxBoxX = Math.max(...paths.flatMap(x => x.vertices.map(x => x.x)));
+      const maxBoxY = Math.max(...paths.flatMap(x => x.vertices.map(x => x.y)));
+      return { paths, minBoxX, minBoxY, maxBoxX, maxBoxY };
+    };
+
+    return generatePreview();
   });
 
   let result: Result | null = $state(null);
@@ -81,6 +117,13 @@
 
     const paths = Vectorize.computeSvgPaths(svg, quality);
 
+    const minBoxX = Math.min(...paths.flatMap(x => x.vertices.map(x => x.x)));
+    const minBoxY = Math.min(...paths.flatMap(x => x.vertices.map(x => x.y)));
+    const maxBoxX = Math.max(...paths.flatMap(x => x.vertices.map(x => x.x)));
+    const maxBoxY = Math.max(...paths.flatMap(x => x.vertices.map(x => x.y)));
+    const width = maxBoxX - minBoxX;
+    const height = maxBoxY - minBoxY;
+
     const triangles: Triangle[] = [];
     for (let i = 0; i < paths.length; i++) {
       const path = paths[i];
@@ -89,13 +132,6 @@
     }
 
     const rightTriangles = triangles.flatMap(triangle => Vectorize.convertTriangleToRightTriangles(triangle));
-
-    const minBoxX = Math.min(...triangles.flatMap(x => [x.a.x, x.b.x, x.c.x]));
-    const minBoxY = Math.min(...triangles.flatMap(x => [x.a.y, x.b.y, x.c.y]));
-    const maxBoxX = Math.max(...triangles.flatMap(x => [x.a.x, x.b.x, x.c.x]));
-    const maxBoxY = Math.max(...triangles.flatMap(x => [x.a.y, x.b.y, x.c.y]));
-    const width = maxBoxX - minBoxX;
-    const height = maxBoxY - minBoxY;
 
     const sizeDivisor = Math.max(width, height);
 
@@ -152,10 +188,43 @@
       objectCount: objects.length,
     };
   }
+
+  function getPathString(path: VectorPath): string {
+    const vertices = path.vertices;
+    if (vertices.length < 3) {
+      return "";
+    }
+
+    let output = `M ${vertices[0].x} ${vertices[0].y}`;
+    for (let i = 1; i < vertices.length; i++) {
+      output += ` L ${vertices[i].x} ${vertices[i].y}`;
+    }
+
+    const holes = path.holes;
+    if (holes.length === 0) {
+      return output;
+    }
+
+    output += " Z";
+
+    for (const hole of holes) {
+      if (hole.length < 3) {
+        continue;
+      }
+
+      output += ` M ${hole[0].x} ${hole[0].y}`;
+      for (let i = 1; i < hole.length; i++) {
+        output += ` L ${hole[i].x} ${hole[i].y}`;
+      }
+      output += " Z";
+    }
+
+    return output;
+  }
 </script>
 
 <div class="flex flex-col gap-4 lg:flex-row lg:max-w-[64rem] lg:mx-auto">
-  <Panel class="lg:flex-[2_1_0]">
+  <Panel class="lg:flex-[2_1_0] flex flex-col gap-2">
     <h2 class="text-center">Config</h2>
     <form onsubmit={onSubmit}>
       <div class="flex flex-col gap-2 sm:flex-row">
@@ -187,7 +256,7 @@
       </label>
       <label>
         Quality
-        <RangeSlider min={1} max={16} value={3} name="quality" class="w-full" />
+        <RangeSlider min={1} max={16} bind:value={quality} name="quality" class="w-full" />
       </label>
       <label>
         Layer
@@ -224,23 +293,41 @@
         {/await}
       {/if}
     </form>
+    <label class="flex-row gap-2 text-foreground-sub">
+      Enable preview
+      <ToggleSwitch name="preview" bind:value={previewEnabled} />
+    </label>
   </Panel>
-  <Panel class="lg:flex-[1_1_0]">
+  <Panel class="lg:flex-[1_1_0] flex flex-col gap-2">
     <h2 class="text-center">Result</h2>
+    {#if previewPromise}
+      {#await previewPromise then preview}
+        <div class="w-full p-4">
+          <svg class="w-full drop-shadow-[0_0_0.5rem_rgba(255,255,255,0.25)]" viewBox="{preview.minBoxX} {preview.minBoxY} {preview.maxBoxX - preview.minBoxX} {preview.maxBoxY - preview.minBoxY}">
+            {#each preview.paths as path}
+              <path d={getPathString(path)}
+                    fill="#{path.color.getHexString()}" 
+                    fill-rule="nonzero" />
+            {/each}
+          </svg>
+        </div>
+      {:catch error}
+        <p class="text-red-600">Failed to render preview: {error}</p>
+      {/await}
+    {/if}
+
     {#if result}
       <p class="text-center">Your prefab is ready!</p>
-      <div class="w-full flex flex-col gap-2">
-        <p class="flex flex-row gap-1 items-center">
-          <IconTypeOutline class="inline-block text-base" />
-          <span>{result.prefabName}</span>
-        </p>
-        <p class="flex flex-row gap-1 items-center">
-          <IconLayoutGrid class="inline-block text-base" />
-          <span>{result.objectCount} objects</span>
-        </p>
-        <TextDownload class="block w-full" text={result.text} fileName="prefab.vgp" />
-      </div>
-    {:else}
+      <p class="flex flex-row gap-1 items-center">
+        <IconTypeOutline class="inline-block text-base" />
+        <span>{result.prefabName}</span>
+      </p>
+      <p class="flex flex-row gap-1 items-center">
+        <IconLayoutGrid class="inline-block text-base" />
+        <span>{result.objectCount} objects</span>
+      </p>
+      <TextDownload class="block w-full" text={result.text} fileName="prefab.vgp" />
+    {:else if !previewPromise}
       <p class="text-center">Nothing here... yet.</p>
     {/if}
   </Panel>
