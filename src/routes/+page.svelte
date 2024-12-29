@@ -2,12 +2,12 @@
   import Vectorize from '$lib/Vectorize';
 	import PrefabGenerator from '$lib/PrefabGenerator';
 	import Panel from './Panel.svelte';
-  import IconUpload from '~icons/lucide/upload';
   import IconTypeOutline from '~icons/lucide/type-outline';
   import IconLayoutGrid from '~icons/lucide/layout-grid';
 	import RangeSlider from '$lib/components/RangeSlider.svelte';
 	import type { SVGResult } from 'three/examples/jsm/Addons.js';
 	import TextDownload from './TextDownload.svelte';
+	import FileUpload from '$lib/components/FileUpload.svelte';
 
   interface Result {
     text: string;
@@ -15,37 +15,55 @@
     objectCount: number;
   }
 
-  let selectedFiles: FileList | null = $state(null);
-  let svg: SVGResult | null = $state(null);
-
-  let result: Result | null = $state(null);
-
-  $effect(() => {
-    if (selectedFiles === null) {
-      svg = null;
-      return;
+  let selectedFile: File | null = $state(null);
+  let svgPromise: Promise<SVGResult> | null = $derived.by(() => {
+    if (!selectedFile) {
+      return null;
     }
 
-    // Load SVG
-    const reader = new FileReader();
-    const file = selectedFiles[0];
-    reader.readAsText(file, "UTF-8");
+    const file = selectedFile;
 
-    reader.addEventListener("load", () => {
-      const text = reader.result as string;
-      svg = Vectorize.parseSvg(text);
+    return new Promise<SVGResult>((resolve, reject) => {
+      // Load SVG
+      const reader = new FileReader();
+      reader.readAsText(file, "UTF-8");
+
+      reader.addEventListener("load", () => {
+        const text = reader.result as string;
+        try {
+          const svg = Vectorize.parseSvg(text);
+          resolve(svg);
+        } catch (error) {
+          reject(error);
+        }
+      });
+
+      reader.addEventListener("error", () => {
+        reject("Failed to read file");
+      });
     });
   });
+
+  let result: Result | null = $state(null);
 
   function onSubmit(event: SubmitEvent & { currentTarget: HTMLFormElement }) {
     event.preventDefault();
 
-    if (svg === null) {
+    if (!svgPromise) {
       return;
     }
 
-    const theme: Map<string, number> = new Map();
     const form = new FormData(event.currentTarget);
+    
+    generateAsync(svgPromise, form)
+      .then(x => result = x)
+      .catch(console.error);
+  }
+
+  async function generateAsync(svgPromise: Promise<SVGResult>, form: FormData): Promise<Result> {
+    const svg = await svgPromise;
+
+    const theme: Map<string, number> = new Map();
     for (const [key, value] of form.entries()) {
       if (key.startsWith("#")) {
         theme.set(key.slice(1), Number(value) - 1);
@@ -119,7 +137,7 @@
     }
 
     const prefab = PrefabGenerator.createPrefab(prefabName, prefabDescription, prefabType, objects);
-    result = {
+    return {
       text: JSON.stringify(prefab),
       prefabName,
       objectCount: objects.length,
@@ -176,16 +194,10 @@
       </label>
       <label>
         Upload SVG
-        <div class="border border-foreground-sub duration-75 hover:border-foreground hover:border-solid text-foreground-sub hover:text-foreground rounded-md flex flex-col justify-center items-center gap-1 h-24 cursor-pointer">
-          <input type="file" name="svg-file" accept=".svg" class="hidden" bind:files={selectedFiles} />
-          <IconUpload class="text-2xl" />
-          {#if selectedFiles}
-            <p class="select-none">{selectedFiles[0].name}</p>
-          {/if}
-        </div>
+        <FileUpload name="svg-file" accept=".svg" onChange={(value) => selectedFile = value} />
       </label>
-      {#if selectedFiles}
-        {#if svg}
+      {#if svgPromise}
+        {#await svgPromise then svg}
           <label>
             Theme (click on color to copy)
             <div class="flex flex-row flex-wrap gap-4">
@@ -197,8 +209,10 @@
               {/each}
             </div>
           </label>
-        {/if}
-        <button type="submit">Generate</button>
+          <button type="submit">Generate</button>
+        {:catch error}
+          <p class="text-red-600">Failed to load SVG: {error}</p>
+        {/await}
       {/if}
     </form>
   </Panel>
