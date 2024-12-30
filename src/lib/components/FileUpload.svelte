@@ -1,6 +1,5 @@
 <script lang="ts">
   import IconUpload from '~icons/lucide/upload';
-	import type { EventHandler } from "$lib/data/EventHandler";
 
   interface Props {
     name: string;
@@ -16,7 +15,7 @@
     class: className = ""
   }: Props = $props();
 
-  let selectedFiles: File[] | null = $state(null);
+  let selectedFiles: FileList | null = $state<FileList | null>(null);
   let selectedFile: File | null = $derived(selectedFiles && selectedFiles.length > 0 ? selectedFiles[0] : null);
 
   $effect(() => {
