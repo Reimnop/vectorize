@@ -256,11 +256,11 @@
       </label>
       <label>
         Quality
-        <RangeSlider min={1} max={16} bind:value={quality} name="quality" class="w-full" />
+        <RangeSlider min={1} max={16} bind:value={quality} name="quality" ariaLabel="quality" class="w-full" />
       </label>
       <label>
         Layer
-        <RangeSlider min={0} max={40} value={40} name="layer" class="w-full" />
+        <RangeSlider min={0} max={40} value={40} name="layer" ariaLabel="quality" class="w-full" />
       </label>
       <label>
         Size

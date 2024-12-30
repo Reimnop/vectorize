@@ -7,6 +7,7 @@
     max: number;
     value: number;
     name: string;
+    ariaLabel?: string;
     class: string;
   }
 
@@ -15,6 +16,7 @@
     max = 16,
     value = $bindable(1),
     name = "",
+    ariaLabel = undefined,
     class: className = ""
   }: Props = $props();
 
@@ -99,6 +101,7 @@
        aria-valuenow={value} 
        aria-valuemin={min} 
        aria-valuemax={max} 
+       aria-label={ariaLabel}
        class="relative w-full h-6 cursor-pointer 
               [&>div:nth-child(1)]:hover:border-foreground 
               [&>div:nth-child(2)]:hover:bg-foreground 

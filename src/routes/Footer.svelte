@@ -4,11 +4,11 @@
 </script>
 
 <div class="flex flex-row justify-center gap-2">
-  <a class="text-foreground-sub duration-75 hover:text-foreground" href="https://github.com/Reimnop/vectorize">
-    <IconGitHub />
+  <a class="text-foreground-sub duration-75 hover:text-foreground" aria-label="GitHub" href="https://github.com/Reimnop/vectorize">
+    <IconGitHub class="text-xl" />
   </a>
-  <a class="text-foreground-sub duration-75 hover:text-foreground" href="https://twitter.com/Reimnop">
-    <IconTwitter />
+  <a class="text-foreground-sub duration-75 hover:text-foreground" aria-label="Twitter" href="https://twitter.com/Reimnop">
+    <IconTwitter class="text-xl" />
   </a>
 </div>
 
