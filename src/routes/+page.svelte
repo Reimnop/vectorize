@@ -260,7 +260,7 @@
       </label>
       <label>
         Layer
-        <RangeSlider min={0} max={40} value={40} name="layer" ariaLabel="quality" class="w-full" />
+        <RangeSlider min={0} max={40} value={40} name="layer" ariaLabel="layer" class="w-full" />
       </label>
       <label>
         Size
