@@ -22,7 +22,7 @@
     if (selectedFile) {
       onChange?.(selectedFile);
     }
-  })
+  });
 </script>
 
 <div class="border border-foreground-sub duration-75 hover:border-foreground hover:border-solid text-foreground-sub hover:text-foreground rounded-md flex flex-col justify-center items-center gap-1 h-24 cursor-pointer {className}">
